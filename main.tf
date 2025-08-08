@@ -67,14 +67,6 @@ module "alb" {
     }
   }
 
-  http_tcp_listeners = [
-    {
-      port               = 80
-      protocol           = "HTTP"
-      terget_group_index = 0
-    }
-  ]
-
   tags = {
     Environment = "dev"
     Project     = "Blog"
