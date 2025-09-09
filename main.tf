@@ -18,16 +18,16 @@ data "aws_ami" "app_ami" {
 module "blog_vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name = "dev"
-  cidr = "10.0.0.0/16"
+  name = var.environment.name
+  cidr = "${var.environment.network_prefix}.0.0/16"
 
   azs             = ["eu-west-1a","eu-west-1b","eu-west-1c"]
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+  public_subnets  = ["${var.environment.network_prefix}.101.0/24", "${var.environment.network_prefix}.102.0/24", "${var.environment.network_prefix}.103.0/24"]
 
 
   tags = {
     Terraform = "true"
-    Environment = "dev"
+    Environment = var.environment.name
   }
 }
 
@@ -35,10 +35,10 @@ module "blog_autoscaling" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "9.0.1"
 
-  name = "blog"
+  name = "${var.environment.name}-blog"
 
-  min_size            = 1
-  max_size            = 2
+  min_size            = var.asg_min_size
+  max_size            = var.asg_max_size
   vpc_zone_identifier = module.blog_vpc.public_subnets
   ##target_group_arns   = module.blog_alb.target_group_arns
   security_groups     = [module.blog_sg.security_group_id]
@@ -49,7 +49,7 @@ module "blog_autoscaling" {
 module "blog_alb" {
   source = "terraform-aws-modules/alb/aws"
 
-  name            = "blog-alb"
+  name            = "${var.environment.name}-blog-alb"
   vpc_id          = module.blog_vpc.vpc_id
   subnets         = module.blog_vpc.public_subnets
   security_groups = [module.blog_sg.security_group_id]
@@ -69,7 +69,7 @@ module "blog_alb" {
 
   target_groups = {
     ex-instance = {
-      name_prefix      = "blog-"
+      name_prefix      = "${var.environment.name}-"
       protocol         = "HTTP"
       port             = 80
       target_type      = "instance"
@@ -78,7 +78,7 @@ module "blog_alb" {
   }
 
   tags = {
-    Environment = "DEV"
+    Environment = var.environment.name
     Project     = "Example"
   }
 }
@@ -88,7 +88,7 @@ module "blog_sg" {
   version = "4.13.0"
 
   vpc_id  = module.blog_vpc.vpc_id
-  name    = "blog"
+  name    = "${var.environment.name}-blog"
   ingress_rules = ["https-443-tcp","http-80-tcp"]
   ingress_cidr_blocks = ["0.0.0.0/0"]
   egress_rules = ["all-all"]
