@@ -3,8 +3,7 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
-variable "ami_filter"
-{
+variable "ami_filter" {
     description = "Name filter and owner for AMI"
 
     type = object ({
@@ -18,8 +17,7 @@ variable "ami_filter"
     }
 }
 
-variable "environment"
-{
+variable "environment" {
   description = "Development Environment"
 
   type =object ({
@@ -33,14 +31,12 @@ variable "environment"
   }
 }
  
-variable "asg_min_size"
-{
+variable "asg_min_size" {
   description = "Minimum number of instances in the ASG"
   default = 1  
 }
 
-variable "asg_max_size"
-{
+variable "asg_max_size" {
   description = "Maximum number of instances in the ASG"
   default = 2
 }
